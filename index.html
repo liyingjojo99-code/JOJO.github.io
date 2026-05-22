@@ -679,6 +679,8 @@
     };
 
     let appMounted = false;
+    let renderedMessageCount = 0;
+    let renderedEndingKey = null;
 
     function mergeStats(base, delta = {}) {
       return {
@@ -729,6 +731,8 @@
         pressureLog: [],
       };
       appMounted = false;
+      renderedMessageCount = 0;
+      renderedEndingKey = null;
       render();
     }
 
@@ -740,6 +744,8 @@
         { speaker: "student", text: scenes[0].student, timeStamp: scenes[0].timeStamp },
       ];
       appMounted = false;
+      renderedMessageCount = 0;
+      renderedEndingKey = null;
       render();
     }
 
@@ -1132,24 +1138,51 @@
 
       if (!state.started) {
         stage.innerHTML = startScreenHTML();
+        renderedMessageCount = 0;
+        renderedEndingKey = null;
         return;
       }
 
       if (!hasChat) {
         stage.innerHTML = chatStageHTML();
+        renderedMessageCount = 0;
+        renderedEndingKey = null;
       }
 
       const chat = document.getElementById("chat-scroll-area");
       const choiceContainer = document.getElementById("choice-container");
 
       if (chat) {
-        chat.innerHTML = `
-          ${state.history.map(messageHTML).join("")}
-          ${state.isTyping ? typingHTML() : ""}
-          ${endingHTML()}
-        `;
+        const oldTyping = document.getElementById("typing-row");
+        if (oldTyping) oldTyping.remove();
+
+        const oldEnding = document.getElementById("ending-row");
+        if (oldEnding && renderedEndingKey !== state.endingKey) oldEnding.remove();
+
+        while (renderedMessageCount < state.history.length) {
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = messageHTML(state.history[renderedMessageCount], renderedMessageCount).trim();
+          chat.appendChild(wrapper.firstElementChild);
+          renderedMessageCount += 1;
+        }
+
+        if (state.isTyping) {
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = typingHTML().trim();
+          chat.appendChild(wrapper.firstElementChild);
+        }
+
+        if (state.endingKey && renderedEndingKey !== state.endingKey) {
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = endingHTML().trim();
+          const endingNode = wrapper.firstElementChild;
+          endingNode.id = "ending-row";
+          chat.appendChild(endingNode);
+          renderedEndingKey = state.endingKey;
+        }
+
         window.requestAnimationFrame(() => {
-          chat.scrollTop = chat.scrollHeight;
+          chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" });
         });
       }
 

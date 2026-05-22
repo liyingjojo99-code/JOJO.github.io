@@ -1,382 +1,1118 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>述职</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Space+Mono:wght@400;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>再回一句｜Vibe Jam Dialogue Game</title>
+  <style>
+    :root {
+      --bg: #05070b;
+      --panel: rgba(15, 23, 42, 0.92);
+      --panel2: rgba(2, 6, 23, 0.78);
+      --line: rgba(71, 85, 105, 0.55);
+      --muted: #94a3b8;
+      --text: #e5e7eb;
+      --blue: #2563eb;
+      --red: #ef4444;
+      --green: #34d399;
+      --amber: #f59e0b;
+      --cyan: #22d3ee;
+      --violet: #8b5cf6;
+      --pink: #ec4899;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      --radius: 28px;
+    }
 
-:root{
-  --black:#080808;
-  --orange:#E85D1A;
-  --paper:#F2EDE4;
-  --paper-dim:rgba(242,237,228,0.55);
-  --serif:'Noto Serif SC',serif;
-  --mono:'Space Mono',monospace;
-  --sans:'Noto Sans SC',sans-serif;
-}
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(37, 99, 235, .20), transparent 35%),
+        radial-gradient(circle at 100% 100%, rgba(239, 68, 68, .13), transparent 35%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      padding: 24px;
+      overflow-x: hidden;
+    }
 
-html{scroll-behavior:smooth;scroll-snap-type:y mandatory}
-body{background:var(--black);color:var(--paper);font-family:var(--serif);overflow-x:hidden}
+    button { font-family: inherit; cursor: pointer; }
+    .app {
+      max-width: 1440px;
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: rgba(2, 6, 23, .92);
+      box-shadow: var(--shadow);
+    }
 
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:200;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:1.1rem 2.5rem;pointer-events:none;
-}
-.nav-logo{
-  font-family:var(--mono);font-size:0.6rem;letter-spacing:0.3em;
-  color:var(--paper);opacity:0.35;text-transform:uppercase;pointer-events:auto;
-}
-.nav-dots{display:flex;gap:8px;align-items:center;pointer-events:auto}
-.nav-dot{
-  width:5px;height:5px;border-radius:50%;background:var(--paper);
-  opacity:0.2;cursor:pointer;border:none;padding:0;
-  transition:opacity 0.3s,transform 0.3s,background 0.3s;
-}
-.nav-dot.active{opacity:1;transform:scale(1.7);background:var(--orange)}
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      background: rgba(15, 23, 42, .95);
+      border-bottom: 1px solid rgba(51, 65, 85, .85);
+    }
 
-.progress-bar{
-  position:fixed;top:0;left:0;height:2px;
-  background:var(--orange);z-index:300;transition:width 0.08s;width:0%
-}
+    .window-dots { display: flex; gap: 8px; align-items: center; }
+    .dot { width: 12px; height: 12px; border-radius: 999px; }
+    .dot.red { background: #f87171; }
+    .dot.yellow { background: #fbbf24; }
+    .dot.green { background: #34d399; }
+    .program {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #94a3b8;
+      font-size: 12px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    .divider { width: 1px; height: 24px; background: #334155; }
 
-section{
-  min-height:100vh;scroll-snap-align:start;
-  position:relative;display:flex;flex-direction:column;
-  justify-content:center;padding:6rem 3rem 4rem;overflow:hidden;
-}
-section.dark{background:var(--black)}
-section.light{background:var(--orange)}
+    .reset-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(2, 6, 23, .95);
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 12px;
+      transition: .18s;
+    }
+    .reset-btn:hover { background: #1e293b; border-color: #64748b; }
 
-.bg-num{
-  position:absolute;font-family:var(--serif);font-weight:900;
-  line-height:0.85;pointer-events:none;user-select:none;
-  font-size:clamp(12rem,32vw,28rem);
-  bottom:-0.05em;right:-0.02em;letter-spacing:-0.05em;
-}
-section.dark .bg-num{color:var(--paper);opacity:0.025}
-section.light .bg-num{color:#000;opacity:0.06}
+    .header {
+      padding: 26px 28px;
+      border-bottom: 1px solid rgba(51, 65, 85, .85);
+      background: rgba(2, 6, 23, .78);
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: end;
+    }
 
-.content{position:relative;z-index:1;max-width:820px}
+    .eyebrow {
+      color: rgba(252, 165, 165, .85);
+      font-size: 12px;
+      letter-spacing: .26em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
 
-.tag{display:flex;align-items:center;gap:0.9rem;margin-bottom:2rem}
-.tag-num{font-family:var(--mono);font-size:0.6rem;letter-spacing:0.35em;text-transform:uppercase}
-.tag-line{width:40px;height:1px;opacity:0.4}
-.tag-label{font-family:var(--mono);font-size:0.58rem;letter-spacing:0.22em;text-transform:uppercase;opacity:0.5}
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: 1.02;
+      letter-spacing: -.04em;
+    }
 
-section.dark .tag-num{color:var(--orange)}
-section.dark .tag-line{background:var(--orange)}
-section.dark .tag-label{color:var(--paper)}
-section.light .tag-num{color:var(--black)}
-section.light .tag-line{background:var(--black)}
-section.light .tag-label{color:var(--black)}
+    .subtitle {
+      margin: 12px 0 0;
+      max-width: 780px;
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.8;
+    }
 
-.page-title{
-  font-size:clamp(2rem,5vw,3.8rem);font-weight:900;line-height:1.15;margin-bottom:0.8rem;
-}
-section.dark .page-title{color:var(--paper)}
-section.light .page-title{color:var(--black)}
+    .stats {
+      width: min(540px, 100%);
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
 
-.divider{width:48px;height:2px;margin:1.6rem 0}
-section.dark .divider{background:var(--orange)}
-section.light .divider{background:var(--black)}
+    .stat {
+      border: 1px solid #475569;
+      background: rgba(30, 41, 59, .8);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      color: #e2e8f0;
+    }
+    .stat .label {
+      color: rgba(226, 232, 240, .72);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      font-size: 10px;
+    }
+    .stat .value { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 14px; }
+    .stat.good { border-color: rgba(52, 211, 153, .5); color: #bbf7d0; background: rgba(52, 211, 153, .1); }
+    .stat.danger { border-color: rgba(239, 68, 68, .6); color: #fecaca; background: rgba(239, 68, 68, .1); }
 
-.page-sub{
-  font-family:var(--sans);font-size:clamp(1rem,2.2vw,1.25rem);
-  font-weight:300;line-height:1.65;
-}
-section.dark .page-sub{color:var(--paper-dim)}
-section.light .page-sub{color:rgba(8,8,8,0.65)}
+    .layout {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr) 310px;
+      min-height: 780px;
+    }
 
-.body-block{
-  font-family:var(--sans);font-weight:300;
-  font-size:clamp(0.92rem,1.7vw,1.1rem);line-height:2;max-width:680px;
-}
-.body-block p{margin-bottom:1.5rem}
-.body-block p:last-child{margin-bottom:0}
-section.dark .body-block{color:var(--paper-dim)}
-section.light .body-block{color:rgba(8,8,8,0.7)}
+    aside { background: rgba(2, 6, 23, .72); padding: 18px; }
+    .left { border-right: 1px solid rgba(51, 65, 85, .85); }
+    .right { border-left: 1px solid rgba(51, 65, 85, .85); }
 
-.kw{
-  font-family:var(--serif);
-  font-size:clamp(1.25rem,2.6vw,1.9rem);
-  font-weight:900;line-height:1;display:inline;
-}
-section.dark .kw{color:var(--orange)}
-section.light .kw{color:var(--black)}
+    .card {
+      border: 1px solid rgba(51, 65, 85, .9);
+      background: rgba(15, 23, 42, .68);
+      border-radius: 22px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
 
-.scroll-hint{
-  position:absolute;bottom:2.2rem;left:3rem;
-  display:flex;align-items:center;gap:0.7rem;
-  font-family:var(--mono);font-size:0.58rem;
-  letter-spacing:0.25em;text-transform:uppercase;color:var(--paper-dim);
-}
-.scroll-line{width:36px;height:1px;background:currentColor;position:relative;overflow:hidden}
-.scroll-line::after{
-  content:'';position:absolute;left:-100%;top:0;
-  width:100%;height:100%;background:var(--orange);
-  animation:slideline 2.2s ease-in-out infinite;
-}
-@keyframes slideline{0%{left:-100%}50%{left:0}100%{left:100%}}
+    .card-title { font-size: 14px; font-weight: 650; margin-bottom: 12px; }
+    .mission-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .smallcap {
+      color: #64748b;
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .live {
+      color: #fecaca;
+      background: rgba(239, 68, 68, .1);
+      border: 1px solid rgba(239, 68, 68, .4);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+    .bar { height: 8px; overflow: hidden; border-radius: 999px; background: #1e293b; }
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--green);
+      transition: width .25s ease;
+      border-radius: 999px;
+    }
+    .card p { margin: 10px 0 0; color: #94a3b8; font-size: 12px; line-height: 1.75; }
+    .red-card { border-color: rgba(248, 113, 113, .35); background: rgba(239, 68, 68, .1); }
+    .red-card .card-title { color: #fee2e2; }
+    .red-card p { color: rgba(254, 226, 226, .82); }
+    .tipbox {
+      margin-top: 12px;
+      border: 1px solid rgba(248, 113, 113, .25);
+      background: rgba(2, 6, 23, .48);
+      border-radius: 14px;
+      padding: 12px;
+      color: rgba(254, 226, 226, .78);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .tipbox strong { color: #fecaca; display: block; margin-bottom: 4px; }
 
-.mono-tag{
-  font-family:var(--mono);font-size:0.82rem;letter-spacing:0.2em;
-  margin-top:1.4rem;
-}
-section.dark .mono-tag{color:var(--orange)}
-section.light .mono-tag{color:var(--black)}
+    .center { min-width: 0; display: flex; flex-direction: column; background: rgba(2, 6, 23, .38); }
+    .chat-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(51, 65, 85, .85);
+      background: rgba(15, 23, 42, .65);
+    }
+    .identity { display: flex; align-items: center; gap: 14px; }
+    .headline { font-size: 15px; font-weight: 650; }
+    .subline { color: #64748b; font-size: 12px; margin-top: 3px; }
+    .listen {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      background: rgba(2, 6, 23, .75);
+    }
 
-.closing-title{
-  font-size:clamp(2.8rem,7vw,5.5rem);font-weight:900;line-height:1.1;
-  color:var(--black);margin-bottom:0.6rem;
-}
-.closing-credit{
-  font-family:var(--sans);font-weight:300;font-size:0.88rem;
-  color:rgba(8,8,8,0.45);margin-top:2rem;letter-spacing:0.08em;
-}
+    .start {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      min-height: 640px;
+      text-align: center;
+    }
+    .start-box { max-width: 600px; }
+    .start-box h2 {
+      margin: 0;
+      font-size: clamp(32px, 4.4vw, 48px);
+      letter-spacing: -.04em;
+      line-height: 1.05;
+    }
+    .start-box p { margin: 18px auto 0; max-width: 460px; color: #94a3b8; line-height: 1.75; font-size: 14px; }
+    .primary {
+      margin-top: 30px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #2563eb;
+      color: white;
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 24px;
+      font-weight: 650;
+      font-size: 14px;
+      box-shadow: 0 20px 44px rgba(37, 99, 235, .22);
+      transition: .18s;
+    }
+    .primary:hover { background: #3b82f6; transform: translateY(-1px); }
 
-.reveal{opacity:0;transform:translateY(26px);transition:opacity 0.85s ease,transform 0.85s ease}
-.reveal.visible{opacity:1;transform:translateY(0)}
-.d1{transition-delay:0.1s}.d2{transition-delay:0.22s}
-.d3{transition-delay:0.36s}.d4{transition-delay:0.52s}
+    .chat-scroll {
+      flex: 1;
+      min-height: 520px;
+      max-height: 720px;
+      overflow-y: auto;
+      padding: 24px 24px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      scroll-behavior: smooth;
+    }
 
-@media(max-width:640px){
-  section{padding:5rem 1.5rem 3rem}
-  nav{padding:0.9rem 1.5rem}
-  .scroll-hint{left:1.5rem}
-}
-</style>
+    .msg { display: flex; gap: 14px; align-items: flex-start; animation: in .22s ease both; }
+    @keyframes in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .msg.player { justify-content: flex-end; }
+    .avatar {
+      width: 46px;
+      height: 46px;
+      flex-shrink: 0;
+      border-radius: 18px;
+      border: 1px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .avatar.student { background: rgba(139, 92, 246, .2); color: #ede9fe; border-color: rgba(167, 139, 250, .45); }
+    .avatar.player { background: rgba(37, 99, 235, .22); color: #dbeafe; border-color: rgba(96, 165, 250, .45); }
+    .avatar.mentor { background: rgba(245, 158, 11, .22); color: #fef3c7; border-color: rgba(252, 211, 77, .45); }
+    .avatar.parent { background: rgba(239, 68, 68, .18); color: #fee2e2; border-color: rgba(248, 113, 113, .45); }
+    .avatar.peer { background: rgba(236, 72, 153, .18); color: #fce7f3; border-color: rgba(244, 114, 182, .45); }
+    .avatar.system { background: rgba(16, 185, 129, .18); color: #d1fae5; border-color: rgba(52, 211, 153, .45); }
+    .avatar.group { background: rgba(34, 211, 238, .18); color: #cffafe; border-color: rgba(103, 232, 249, .45); }
+
+    .bubblewrap { max-width: min(78%, 760px); }
+    .player .bubblewrap { text-align: right; }
+    .meta {
+      color: #64748b;
+      font-size: 10px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      margin: 0 4px 7px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      align-items: center;
+    }
+    .player .meta { justify-content: flex-end; }
+    .bubble {
+      border-radius: 28px;
+      padding: 16px 20px;
+      line-height: 1.7;
+      font-size: 15px;
+      font-weight: 650;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, .22);
+      white-space: pre-wrap;
+    }
+    .bubble.student { background: #1e293b; color: #e2e8f0; border-bottom-left-radius: 8px; }
+    .bubble.player { background: #2563eb; color: white; border-bottom-right-radius: 8px; }
+    .bubble.mentor { background: rgba(245, 158, 11, .14); color: #fffbeb; border: 1px solid rgba(245, 158, 11, .33); border-bottom-left-radius: 8px; }
+    .bubble.parent { background: rgba(239, 68, 68, .14); color: #fff1f2; border: 1px solid rgba(248, 113, 113, .33); border-bottom-left-radius: 8px; }
+    .bubble.peer { background: rgba(236, 72, 153, .14); color: #fdf2f8; border: 1px solid rgba(244, 114, 182, .33); border-bottom-left-radius: 8px; }
+    .bubble.system { background: rgba(16, 185, 129, .14); color: #ecfdf5; border: 1px solid rgba(52, 211, 153, .33); border-bottom-left-radius: 8px; }
+    .bubble.group { background: rgba(34, 211, 238, .14); color: #ecfeff; border: 1px solid rgba(103, 232, 249, .33); border-bottom-left-radius: 8px; }
+
+    .typing { display: flex; gap: 5px; width: fit-content; border-radius: 20px; background: rgba(51, 65, 85, .85); padding: 14px 18px; }
+    .typing span { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; animation: dot 1s infinite ease-in-out; }
+    .typing span:nth-child(2) { animation-delay: .15s; }
+    .typing span:nth-child(3) { animation-delay: .3s; }
+    @keyframes dot {
+      0%, 80%, 100% { opacity: .25; transform: translateY(0); }
+      40% { opacity: 1; transform: translateY(-4px); }
+    }
+
+    .choice-area { border-top: 1px solid rgba(51, 65, 85, .88); background: rgba(2, 6, 23, .96); padding: 18px; }
+    .choice-area.interrupt { border-top-color: rgba(248, 113, 113, .35); background: rgba(69, 10, 10, .38); }
+    .choice-label { color: #64748b; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; margin: 0 0 12px; }
+    .interrupt .choice-label { color: #fca5a5; }
+    .choices { display: grid; gap: 12px; }
+    .choice-btn {
+      width: 100%;
+      border: 1px solid rgba(51, 65, 85, .9);
+      background: rgba(15, 23, 42, .78);
+      color: #e2e8f0;
+      text-align: left;
+      border-radius: 16px;
+      padding: 16px 18px;
+      line-height: 1.65;
+      font-size: 14px;
+      transition: .18s;
+    }
+    .choice-btn:hover { border-color: rgba(59, 130, 246, .72); background: rgba(37, 99, 235, .12); }
+    .interrupt .choice-btn { border-color: rgba(248, 113, 113, .25); background: rgba(248, 113, 113, .1); color: #fff1f2; }
+    .interrupt .choice-btn:hover { border-color: rgba(252, 165, 165, .68); background: rgba(248, 113, 113, .16); }
+    .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      margin-right: 10px;
+      border-radius: 9px;
+      background: #1e293b;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .choice-btn:hover .num { background: #2563eb; color: white; }
+    .interrupt .num { background: rgba(248, 113, 113, .22); color: #fecaca; }
+
+    .ending {
+      margin: 34px auto 0;
+      max-width: 720px;
+      text-align: center;
+      border: 1px solid rgba(52, 211, 153, .35);
+      background: rgba(52, 211, 153, .10);
+      border-radius: 34px;
+      padding: 30px;
+      box-shadow: 0 22px 64px rgba(6, 78, 59, .22);
+      animation: in .25s ease both;
+    }
+    .ending-tag { color: #6ee7b7; letter-spacing: .24em; text-transform: uppercase; font-size: 12px; margin-bottom: 8px; }
+    .ending h2 { margin: 0; font-size: 32px; }
+    .ending p { color: rgba(236, 253, 245, .84); line-height: 1.9; margin: 18px 0 0; font-size: 14px; }
+    .ending button {
+      margin-top: 24px;
+      background: #34d399;
+      color: #022c22;
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 20px;
+      font-weight: 800;
+    }
+
+    .queue-state {
+      border: 1px solid rgba(51, 65, 85, .9);
+      background: rgba(2, 6, 23, .68);
+      border-radius: 14px;
+      padding: 13px;
+      color: #94a3b8;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .queue-state.hot { border-color: rgba(248, 113, 113, .4); background: rgba(239, 68, 68, .1); color: #fecaca; }
+    .mini-grid { margin-top: 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .mini { border: 1px solid rgba(51, 65, 85, .9); background: rgba(2, 6, 23, .68); border-radius: 14px; padding: 12px; font-size: 12px; }
+    .mini span { color: #64748b; display: block; margin-bottom: 4px; }
+    .mini strong { color: #e2e8f0; }
+    .pressure-list { max-height: 350px; overflow-y: auto; display: grid; gap: 10px; padding-right: 2px; }
+    .empty {
+      border: 1px dashed rgba(248, 113, 113, .35);
+      border-radius: 14px;
+      padding: 14px;
+      color: rgba(254, 226, 226, .6);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .pressure-item {
+      border: 1px solid rgba(248, 113, 113, .25);
+      background: rgba(2, 6, 23, .48);
+      border-radius: 14px;
+      padding: 12px;
+      color: rgba(255, 241, 242, .8);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .pressure-time { color: #fecaca; font-weight: 700; margin-bottom: 4px; }
+
+    @media (max-width: 1100px) {
+      body { padding: 12px; }
+      .header { flex-direction: column; align-items: stretch; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+      .layout { grid-template-columns: 1fr; }
+      .left, .right { border: 0; border-bottom: 1px solid rgba(51, 65, 85, .85); }
+      .right { border-top: 1px solid rgba(51, 65, 85, .85); }
+      .chat-scroll { max-height: none; }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 0; }
+      .app { border-radius: 0; min-height: 100vh; }
+      .program { letter-spacing: .08em; }
+      .divider { display: none; }
+      .topbar { align-items: flex-start; }
+      .reset-btn { padding: 9px 10px; }
+      .stats { grid-template-columns: 1fr; }
+      .bubblewrap { max-width: 86%; }
+      .bubble { font-size: 14px; }
+      .chat-head { align-items: flex-start; flex-direction: column; }
+      .listen { align-self: flex-start; }
+    }
+  </style>
 </head>
+
 <body>
+  <div id="app"></div>
 
-<div class="progress-bar" id="progress"></div>
+  <script>
+    const AVATAR_IMAGES = {
+      clara: "https://i.postimg.cc/QFFX9YDY/avatar-clara-jpg.jpg",
+      student: "https://i.postimg.cc/18VQ5gcZ/avatar-student-jpg.jpg",
+      parent: "https://i.postimg.cc/VJ08LSBm/avatar-parent-jpg.jpg",
+      mentor: "https://i.postimg.cc/grMrBTzd/72502613-03ea-47a9-8116-2b598083f745.png",
+    };
 
-<nav>
-  <span class="nav-logo">述职 · Annual Review</span>
-  <div class="nav-dots" id="nav-dots">
-    <button class="nav-dot active" data-target="p1"></button>
-    <button class="nav-dot" data-target="p2"></button>
-    <button class="nav-dot" data-target="p3"></button>
-    <button class="nav-dot" data-target="p4"></button>
-    <button class="nav-dot" data-target="p5"></button>
-    <button class="nav-dot" data-target="p6"></button>
-    <button class="nav-dot" data-target="p7"></button>
-    <button class="nav-dot" data-target="p8"></button>
-    <button class="nav-dot" data-target="p9"></button>
-    <button class="nav-dot" data-target="p10"></button>
-  </div>
-</nav>
+    const speakers = {
+      student: { name: "林同学", role: "作品集学生", avatar: "林", avatarUrl: AVATAR_IMAGES.student, cls: "student" },
+      player: { name: "Clara", role: "教务", avatar: "C", avatarUrl: AVATAR_IMAGES.clara, cls: "player" },
+      mentor: { name: "安老师", role: "教研主管", avatar: "安", avatarUrl: AVATAR_IMAGES.mentor, cls: "mentor" },
+      parent: { name: "学生家长", role: "压力短信", avatar: "家", avatarUrl: AVATAR_IMAGES.parent, cls: "parent" },
+      peer: { name: "Mina", role: "同班同学", avatar: "M", cls: "peer" },
+      system: { name: "Deadline OS", role: "系统通知", avatar: "OS", cls: "system" },
+      group: { name: "提交群聊", role: "群消息", avatar: "群", cls: "group" },
+    };
 
-<!-- 01 · BLACK · 野心与定位 标题页 -->
-<section id="p1" class="dark">
-  <div class="bg-num">01</div>
-  <div class="content">
-    <div class="tag reveal">
-      <span class="tag-num">01 / 10</span>
-      <div class="tag-line"></div>
-      <span class="tag-label">关于我</span>
-    </div>
-    <h1 class="page-title reveal d1"><strong>野心与定位</strong></h1>
-    <div class="divider reveal d2"></div>
-    <p class="page-sub reveal d3">不会停止进化的<strong>学习者</strong></p>
-  </div>
-  <div class="scroll-hint">
-    <span class="scroll-line"></span>
-    <span>scroll</span>
-  </div>
-</section>
+    const INITIAL_STATS = { trust: 2, stress: 2, time: 10, progress: 0 };
+    const LIMITS = { trust: [0, 6], stress: [0, 8], time: [0, 10], progress: [0, 8] };
+    const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-<!-- 02 · ORANGE · 野心与定位 内容 -->
-<section id="p2" class="light">
-  <div class="bg-num">02</div>
-  <div class="content">
-    <div class="tag reveal">
-      <span class="tag-num">02 / 10</span>
-      <div class="tag-line"></div>
-      <span class="tag-label">野心与定位</span>
-    </div>
-    <div class="body-block">
-      <p class="reveal d1">"变强"不是阶段性目标，而是<span class="kw">长期驱动力</span></p>
-      <p class="reveal d2">持续<span class="kw">拆解流程</span>、<span class="kw">重构方法</span>——寻找更高效、更真实的表达路径</p>
-      <p class="reveal d3">野心不是"会用软件"，而是<span class="kw">定义流程</span>、<span class="kw">影响他人工作方式</span></p>
-      <p class="reveal d4">让别人看到的，不只是结果——而是一种更清晰的<span class="kw">生产逻辑</span></p>
-    </div>
-  </div>
-</section>
+    const scenes = [
+      {
+        id: "opening",
+        timeStamp: "02:43 AM",
+        student: "我真的做不完了。还有十分钟截止，我的作品集页面看起来还是没整理好。",
+        choices: [
+          { text: "先别慌。直接告诉我现在缺哪一块。", reply: "缺项目描述，还有图片顺序。我不知道该先改哪个。", delta: { progress: 1, stress: 1, time: -1 } },
+          { text: "先呼吸一下。我们现在不是把它做到完美，只是把它做到可以提交。", reply: "可以提交……不是完美。好，我可以先按这个标准来。", delta: { trust: 1, stress: -1, time: -1 } },
+          { text: "应该没事。现在有什么就直接交什么吧。", reply: "这不太有用。我知道它现在还不行。", delta: { trust: -1, time: -1 } },
+        ],
+        interrupt: {
+          speaker: "mentor",
+          timeStamp: "02:44 AM",
+          text: "安老师：最后十分钟不要重做结构。优先保证能提交、能读懂、责任清楚。",
+          choices: [
+            { text: "回复安老师：收到，我们只做 Submit-ready，不做大重构。", reply: "安老师：对。这个判断是对的。先把可提交版本交出去。", delta: { trust: 1 } },
+            { text: "追问安老师：能不能再解释一下评分标准？", reply: "安老师：现在不是讨论评分的时候。先完成提交。", delta: { time: -1, stress: 1 } },
+            { text: "不回复安老师，继续和学生说话。", reply: "安老师没有继续发消息，但右上角的未读提示还在闪。", delta: { stress: 1 } },
+          ],
+        },
+      },
+      {
+        id: "screenshots",
+        timeStamp: "02:45 AM",
+        student: "我的截图太多了。我不知道该保留哪几张。",
+        choices: [
+          { text: "图片多一点会显得更丰富。都留着吧。", reply: "可是现在已经很挤了。我感觉更乱了。", delta: { stress: 1, trust: -1, time: -1 } },
+          { text: "删掉所有不能说明你负责内容的图片。", reply: "好。我只留能证明我实际参与内容的图。", delta: { progress: 1, time: -1 } },
+          { text: "只保留三类：最终效果图、制作拆解图、一张过程图。", reply: "这样就有结构了。我可以把多余的图删掉。", delta: { progress: 1, trust: 1, time: -1 } },
+        ],
+        interrupt: {
+          speaker: "parent",
+          timeStamp: "02:46 AM",
+          text: "家长短信：老师您好，孩子现在到底做到哪一步了？我们很着急，这个作品集今天必须交上去吧？",
+          choices: [
+            { text: "回复家长：正在收尾提交页，我会先保证孩子完成提交，再同步结果。", reply: "学生家长：好的，那麻烦您盯一下。我们等您的消息。", delta: { stress: -1, trust: 1, time: -1 } },
+            { text: "把家长短信转给学生，让她自己解释进度。", reply: "林同学看到短信后停了几秒：我爸妈又在催……我更慌了。", delta: { stress: 2, time: -1 } },
+            { text: "暂时不回家长，先继续处理作品集。", reply: "家长的未读短信停在右侧面板里，压力没有消失。", delta: { stress: 1 } },
+          ],
+        },
+      },
+      {
+        id: "role-description",
+        timeStamp: "02:47 AM",
+        student: "我不知道怎么写我做了什么。怎么写都很蠢。",
+        choices: [
+          { text: "如果图够强，可以跳过职责描述。", reply: "我担心审核的人看不懂我到底做了什么。", delta: { trust: -1, stress: 1, time: -1 } },
+          { text: "就写你负责了全部内容。这样看起来更强。", reply: "听起来是更厉害，但这不完全是真的。", delta: { progress: 1, trust: -1, time: -1 } },
+          { text: "写制作事实：建模、UV、贴图、灯光和引擎搭建。", reply: "这样听起来没那么虚。我可以把它写成职责列表。", delta: { progress: 1, trust: 1, stress: -1, time: -1 } },
+        ],
+        interrupt: {
+          speaker: "peer",
+          timeStamp: "02:48 AM",
+          text: "Mina：救命，你能不能也顺手帮我看一眼封面？我也快交了。",
+          choices: [
+            { text: "发送自动回复：我现在在处理提交危机，十分钟后看。", reply: "Mina：收到，我先自己导出。你忙你的。", delta: { trust: 1, stress: -1 } },
+            { text: "打开 Mina 的封面，先帮她看一眼。", reply: "Mina：谢谢！但你这边的聊天窗口停了太久，林同学又开始发问号。", delta: { time: -2, stress: 1 } },
+            { text: "直接忽略 Mina 的消息。", reply: "Mina 又发来一个哭脸表情。未读消息变成了 2。", delta: { stress: 1 } },
+          ],
+        },
+      },
+      {
+        id: "layout",
+        timeStamp: "02:49 AM",
+        student: "我要不要重做排版？它现在看起来很丑。",
+        choices: [
+          { text: "把字体放大一点就行。", reply: "确实更清楚了，但页面还是有点乱。", delta: { progress: 1, trust: -1, time: -1 } },
+          { text: "不要重做。只对齐标题、减少文字、统一间距。", reply: "这个更快。我可以先清理页面，不重新搭一遍。", delta: { progress: 1, stress: -1, trust: 1, time: -1 } },
+          { text: "要。现在马上重新做一版。", reply: "我新建了文件。等等，这比我想的更花时间。", delta: { stress: 2, time: -3 } },
+        ],
+      },
+      {
+        id: "technical-breakdown",
+        timeStamp: "02:51 AM",
+        student: "我的材质拆解页放了节点图，但我不知道该怎么解释。",
+        choices: [
+          { text: "直接删掉节点截图。", reply: "那这一页就没有材质系统的证明了。", delta: { progress: -1, trust: -1, time: -1 } },
+          { text: "每个节点都写一整段技术说明。", reply: "我开始写了，但现在这一页文字太多了。", delta: { stress: 1, time: -2 } },
+          { text: "解释功能，不要解释每个节点：Base Color、Roughness、Normal、Mask Control。", reply: "明白了。我可以解释系统逻辑，不用逐根线说明。", delta: { progress: 1, trust: 1, time: -1 } },
+        ],
+        interrupt: {
+          speaker: "group",
+          timeStamp: "02:52 AM",
+          text: "提交群聊：所有同学注意，系统高峰期可能排队。建议提前导出草稿版。",
+          choices: [
+            { text: "立刻让学生导出一个草稿 PDF 作为保底。", reply: "Deadline OS：草稿版已保存。即使后面出错，也有一份能交的文件。", delta: { progress: 1, stress: -1, time: -1 } },
+            { text: "继续编辑，不管群聊提醒。", reply: "群消息很快被刷走，但导出队列的风险还在。", delta: { stress: 1 } },
+            { text: "花时间去群里询问别人有没有报错。", reply: "群里开始讨论各种无关问题。你的注意力被拖走了。", delta: { time: -2, stress: 1 } },
+          ],
+        },
+      },
+      {
+        id: "caption",
+        timeStamp: "02:53 AM",
+        student: "图片说明还是很别扭。我要不要再重写一遍？",
+        choices: [
+          { text: "先别管了。一句 caption 不会决定整个作品集。", reply: "也许吧。我还是不喜欢它，但我可以先往下走。", delta: { stress: -1, time: -1 } },
+          { text: "压缩成一句话：这张图展示什么，以及它为什么重要。", reply: "清楚多了。我把一半文字删掉了。", delta: { progress: 1, trust: 1, time: -1 } },
+          { text: "多用一些高级词，让它听起来更专业。", reply: "听起来是变大了，但也变得不具体了。", delta: { trust: -1, stress: 1, time: -1 } },
+        ],
+        interrupt: {
+          speaker: "parent",
+          timeStamp: "02:54 AM",
+          text: "家长短信：还有几分钟？孩子刚刚说自己可能交不上。是不是哪里出了问题？",
+          choices: [
+            { text: "简短回复：正在导出前检查，当前重点是让她稳定提交。", reply: "学生家长：明白。我们先不打扰她，等提交结果。", delta: { stress: -1, trust: 1, time: -1 } },
+            { text: "详细解释目前所有问题和风险。", reply: "家长连续发来三条追问。林同学看到通知后明显更紧张了。", delta: { stress: 2, time: -2 } },
+            { text: "不处理家长短信，继续推学生写 caption。", reply: "短信通知继续停在右侧，学生问：是不是我家长又在催？", delta: { stress: 1, trust: -1 } },
+          ],
+        },
+      },
+      {
+        id: "export",
+        timeStamp: "02:55 AM",
+        student: "PDF 导出提示有一张图分辨率太低。我要换掉它吗？",
+        choices: [
+          { text: "忽略所有警告。现在立刻导出。", reply: "我导出了，但我不确定最终图看起来是不是清楚。", delta: { progress: 1, trust: -1, time: -1 } },
+          { text: "所有低分辨率图片都重新替换。", reply: "我找到原图了，但现在我又开始检查太多页面了。", delta: { progress: 1, stress: 2, time: -3 } },
+          { text: "只有最终效果图受影响才换。过程图现在不要动。", reply: "它只是过程图。那我先保留，直接导出。", delta: { progress: 1, trust: 1, stress: -1, time: -1 } },
+        ],
+        interrupt: {
+          speaker: "system",
+          timeStamp: "02:56 AM",
+          text: "Deadline OS：检测到提交系统响应变慢。是否打开低风险导出路径？",
+          choices: [
+            { text: "打开低风险导出路径：保留当前版，直接提交 PDF。", reply: "Deadline OS：低风险路径已启用。文件锁定，提交窗口已打开。", delta: { progress: 1, stress: -1, time: -1 } },
+            { text: "继续修图，暂时不打开提交窗口。", reply: "Deadline OS：提交窗口未打开。剩余时间继续减少。", delta: { time: -2, stress: 1 } },
+            { text: "关闭系统提醒，假装没看到。", reply: "Deadline OS 的红色角标还在闪。", delta: { stress: 1 } },
+          ],
+        },
+      },
+      {
+        id: "final-minute",
+        timeStamp: "02:58 AM",
+        student: "我还是觉得它不够好。",
+        choices: [
+          { text: "你自己决定。我不能替你判断。", reply: "我知道。我只是想让有人帮我做最后那个决定。", delta: { trust: -1, stress: 1, time: -1 } },
+          { text: "够好现在的标准是：能读懂、真实、已经提交。现在导出。", reply: "能读懂。真实。已经提交。好，我按提交键了。", delta: { progress: 1, stress: -1, trust: 1, time: -1 } },
+          { text: "再做最后一轮润色。", reply: "我改了封面。现在我害怕我把排版弄坏了。", delta: { progress: 1, stress: 1, time: -2 } },
+        ],
+        interrupt: {
+          speaker: "parent",
+          timeStamp: "02:59 AM",
+          text: "家长短信：老师，现在能不能直接交？我们不要求完美，先别错过时间。",
+          choices: [
+            { text: "回复家长：现在进入最终提交，不再新增修改。", reply: "学生家长：好，辛苦您。我们等提交结果。", delta: { stress: -1, trust: 1 } },
+            { text: "告诉家长还需要再优化一下。", reply: "学生家长：可是不就剩最后一分钟了吗？短信继续弹出。", delta: { stress: 2, time: -1 } },
+            { text: "不回家长，直接让学生自己判断。", reply: "家长短信没有再响，但学生盯着通知栏，手停在鼠标上。", delta: { stress: 1, trust: -1 } },
+          ],
+        },
+      },
+    ];
 
-<!-- 03 · BLACK · 关于教学 标题页 -->
-<section id="p3" class="dark">
-  <div class="bg-num">03</div>
-  <div class="content">
-    <div class="tag reveal">
-      <span class="tag-num">03 / 10</span>
-      <div class="tag-line"></div>
-      <span class="tag-label">关于教学</span>
-    </div>
-    <h1 class="page-title reveal d1"><strong>我真的在「教」吗?</strong></h1>
-    <div class="divider reveal d2"></div>
-    <p class="page-sub reveal d3">我并不完全是一个理想状态下的<strong>「教授者」</strong></p>
-  </div>
-</section>
+    const endings = {
+      submitted: { title: "结局 A — 已提交", tag: "最佳结局", text: "上传进度条到达 100%。几秒钟里，Clara、林同学和家长短信都安静下来。然后一条消息跳出来：『提交了。我好像终于能呼吸了。』你没有修好一切。你只是帮她完成了。" },
+      late: { title: "结局 B — 完美，但迟到", tag: "错过截止时间", text: "最后一页确实更干净了。标题对齐了，图片顺序清楚了，职责描述也终于能读了。然后提交按钮变成灰色。截止时间已经过去。" },
+      panic: { title: "结局 C — 崩溃退出", tag: "压力失控", text: "她的输入状态出现了。又消失了。家长短信、群聊提醒和页面报错挤在同一个屏幕上。最后只发来一句：『我不行了。我先关掉。』聊天窗口安静下来。" },
+      cold: { title: "结局 D — 冰冷教务", tag: "信任归零", text: "她不再继续问 Clara。文件还开着，截止时间还在倒数。但你的回复已经变成了另一个她不想看的窗口。" },
+      alive: { title: "结局 E — 勉强活着", tag: "生存导出", text: "提交内容有点乱。间距不完全统一。某一句图片说明里还有错字。但它在那里。它存在了。有时候，活下来本身就是一种有效导出。" },
+      unfinished: { title: "结局 F — 仍然打开", tag: "未完成", text: "页面还停在那里。光标在图片说明框里闪烁。家长短信停在右侧，提交窗口停在后台。还有很多工作没做完，但夜晚已经越过了你。" },
+    };
 
-<!-- 04 · ORANGE · 关于教学 内容 -->
-<section id="p4" class="light">
-  <div class="bg-num">04</div>
-  <div class="content">
-    <div class="tag reveal">
-      <span class="tag-num">04 / 10</span>
-      <div class="tag-line"></div>
-      <span class="tag-label">关于教学</span>
-    </div>
-    <div class="body-block">
-      <p class="reveal d1">对案例质量的要求：呈现<span class="kw">可被验证</span>、进入<span class="kw">行业标准</span>的内容</p>
-      <p class="reveal d2">借学生项目推动自身<span class="kw">技术迭代</span>——让教学具备<span class="kw">生产属性</span></p>
-      <p class="reveal d3">从"替学生解决问题"，转向培养<span class="kw">独立解决问题的能力</span></p>
-      <p class="reveal d4">给出<span class="kw">方法论</span>，让方法<span class="kw">可迁移</span>——而非只停留在结果</p>
-    </div>
-  </div>
-</section>
+    let state = {
+      started: false,
+      stats: { ...INITIAL_STATS },
+      sceneIndex: 0,
+      history: [],
+      phase: "idle",
+      endingKey: null,
+      isTyping: false,
+      pendingInterrupt: null,
+      pressureLog: [],
+    };
 
-<!-- 05 · BLACK · 关于产业 标题页 -->
-<section id="p5" class="dark">
-  <div class="bg-num">05</div>
-  <div class="content">
-    <div class="tag reveal">
-      <span class="tag-num">05 / 10</span>
-      <div class="tag-line"></div>
-      <span class="tag-label">关于产业</span>
-    </div>
-    <h1 class="page-title reveal d1"><strong>我还在里面吗?</strong></h1>
-    <div class="divider reveal d2"></div>
-    <p class="page-sub reveal d3">我始终认为，<strong>我还在产业之中</strong></p>
-  </div>
-</section>
-
-<!-- 06 · ORANGE · 关于产业 内容 -->
-<section id="p6" class="light">
-  <div class="bg-num">06</div>
-  <div class="content">
-    <div class="tag reveal">
-      <span class="tag-num">06 / 10</span>
-      <div class="tag-line"></div>
-      <span class="tag-label">关于产业</span>
-    </div>
-    <div class="body-block">
-      <p class="reveal d1">电影 · 电视 · 游戏 · 广告——跨行经历构建我对<span class="kw">「产业」</span>与<span class="kw">「前沿」</span>的真实认知</p>
-      <p class="reveal d2">结论：<span class="kw">产业 ≠ 前瞻</span>，头部 ≠ 精品</p>
-      <p class="reveal d3">真正构成产业的，不是公司——而是<span class="kw">持续学习</span>与<span class="kw">不断反思</span>的能力</p>
-      <p class="reveal d4">持续优化流程、更新认知、提高标准——<span class="kw">我本身就在产业的逻辑之中</span></p>
-    </div>
-  </div>
-</section>
-
-<!-- 07 · BLACK · 关于格局 标题页 -->
-<section id="p7" class="dark">
-  <div class="bg-num">07</div>
-  <div class="content">
-    <div class="tag reveal">
-      <span class="tag-num">07 / 10</span>
-      <div class="tag-line"></div>
-      <span class="tag-label">关于格局</span>
-    </div>
-    <h1 class="page-title reveal d1"><strong>我准备好变大了吗?</strong></h1>
-    <div class="divider reveal d2"></div>
-    <p class="page-sub reveal d3"><strong>当然</strong></p>
-  </div>
-</section>
-
-<!-- 08 · ORANGE · 关于格局 内容 -->
-<section id="p8" class="light">
-  <div class="bg-num">08</div>
-  <div class="content">
-    <div class="tag reveal">
-      <span class="tag-num">08 / 10</span>
-      <div class="tag-line"></div>
-      <span class="tag-label">关于格局</span>
-    </div>
-    <div class="body-block">
-      <p class="reveal d1">很多事不是"想清楚才开始"——而是<span class="kw">做了之后才变清楚</span></p>
-      <p class="reveal d2">自我怀疑依然存在，但它已经不再<span class="kw">阻止我行动</span></p>
-      <p class="reveal d3">"变大"不只是规模扩大——而是对<span class="kw">责任</span>、<span class="kw">标准</span>与<span class="kw">影响力</span>的提升</p>
-    </div>
-  </div>
-</section>
-
-<!-- 09 · BLACK · 最后 标题页 -->
-<section id="p9" class="dark">
-  <div class="bg-num">09</div>
-  <div class="content">
-    <div class="tag reveal">
-      <span class="tag-num">09 / 10</span>
-      <div class="tag-line"></div>
-      <span class="tag-label">最后</span>
-    </div>
-    <h1 class="page-title reveal d1"><strong>我要不要变成更强的人?</strong></h1>
-    <div class="divider reveal d2"></div>
-    <p class="page-sub reveal d3">我很讨厌我老子，但很认可他的人生信条——<br><strong>人要持续变强，只有变强，才能拥有选择权</strong></p>
-    <p class="mono-tag reveal d4">学习 · 反思 · 迭代</p>
-  </div>
-</section>
-
-<!-- 10 · ORANGE · 谢谢 -->
-<section id="p10" class="light">
-  <div class="bg-num">10</div>
-  <div class="content">
-    <div class="tag reveal">
-      <span class="tag-num">10 / 10</span>
-      <div class="tag-line"></div>
-      <span class="tag-label">End</span>
-    </div>
-    <p class="closing-title reveal d1">谢谢你们<br>接纳我<br>帮助我<br>找到我</p>
-    <p class="closing-credit reveal d2">Annual Review · 述职报告</p>
-  </div>
-</section>
-
-<script>
-const sections=document.querySelectorAll('section');
-const dots=document.querySelectorAll('.nav-dot');
-const progress=document.getElementById('progress');
-
-dots.forEach(dot=>{
-  dot.addEventListener('click',()=>{
-    const t=document.getElementById(dot.dataset.target);
-    if(t)t.scrollIntoView({behavior:'smooth'});
-  });
-});
-
-const sectionObs=new IntersectionObserver(entries=>{
-  entries.forEach(entry=>{
-    if(entry.isIntersecting){
-      dots.forEach(d=>d.classList.remove('active'));
-      const a=document.querySelector(`.nav-dot[data-target="${entry.target.id}"]`);
-      if(a)a.classList.add('active');
+    function mergeStats(base, delta = {}) {
+      return {
+        trust: clamp(base.trust + (delta.trust || 0), LIMITS.trust[0], LIMITS.trust[1]),
+        stress: clamp(base.stress + (delta.stress || 0), LIMITS.stress[0], LIMITS.stress[1]),
+        time: clamp(base.time + (delta.time || 0), LIMITS.time[0], LIMITS.time[1]),
+        progress: clamp(base.progress + (delta.progress || 0), LIMITS.progress[0], LIMITS.progress[1]),
+      };
     }
-  });
-},{threshold:0.5});
-sections.forEach(s=>sectionObs.observe(s));
 
-const revealObs=new IntersectionObserver(entries=>{
-  entries.forEach(entry=>{
-    if(entry.isIntersecting){
-      entry.target.classList.add('visible');
-      revealObs.unobserve(entry.target);
+    function getEnding(stats) {
+      if (stats.trust <= 0) return "cold";
+      if (stats.stress >= 7) return "panic";
+      if (stats.time <= 0 && stats.progress >= 6) return "late";
+      if (stats.time <= 0) return "unfinished";
+      if (stats.progress >= 7 && stats.trust >= 3 && stats.stress <= 5) return "submitted";
+      if (stats.progress >= 5 && stats.time > 0) return "alive";
+      return "unfinished";
     }
-  });
-},{threshold:0.1});
-document.querySelectorAll('.reveal').forEach(el=>revealObs.observe(el));
 
-window.addEventListener('scroll',()=>{
-  const t=document.body.scrollHeight-window.innerHeight;
-  progress.style.width=(window.scrollY/t*100)+'%';
-});
+    function getFatalEnding(stats) {
+      if (stats.trust <= 0) return "cold";
+      if (stats.stress >= 7) return "panic";
+      if (stats.time <= 0) return getEnding(stats);
+      return null;
+    }
 
-setTimeout(()=>{
-  document.querySelectorAll('#p1 .reveal').forEach(el=>el.classList.add('visible'));
-},200);
-</script>
+    function addMessage(message) {
+      state.history.push(message);
+      render();
+    }
+
+    function setTyping(value) {
+      state.isTyping = value;
+      render();
+    }
+
+    function resetGame() {
+      state = {
+        started: false,
+        stats: { ...INITIAL_STATS },
+        sceneIndex: 0,
+        history: [],
+        phase: "idle",
+        endingKey: null,
+        isTyping: false,
+        pendingInterrupt: null,
+        pressureLog: [],
+      };
+      render();
+    }
+
+    function startGame() {
+      state.started = true;
+      state.phase = "choice";
+      state.history = [
+        { speaker: "system", text: "Deadline Assist 已启动。检测到学生提交风险：高。建议 Clara 先建立最低可提交版本。", timeStamp: "02:43 AM" },
+        { speaker: "student", text: scenes[0].student, timeStamp: scenes[0].timeStamp },
+      ];
+      render();
+    }
+
+    function goToNextScene(fromIndex, baseStats = state.stats) {
+      if (fromIndex >= scenes.length - 1) {
+        window.setTimeout(() => {
+          state.endingKey = getEnding(baseStats);
+          render();
+        }, 500);
+        return;
+      }
+
+      const nextIndex = fromIndex + 1;
+      const nextScene = scenes[nextIndex];
+      state.sceneIndex = nextIndex;
+      setTyping(true);
+
+      window.setTimeout(() => {
+        setTyping(false);
+        addMessage({ speaker: "student", text: nextScene.student, timeStamp: nextScene.timeStamp });
+        state.phase = "choice";
+        render();
+      }, 650);
+    }
+
+    function finishScene(nextStats, scene, index) {
+      const fatalEnding = getFatalEnding(nextStats);
+      if (fatalEnding) {
+        window.setTimeout(() => {
+          state.endingKey = fatalEnding;
+          render();
+        }, 650);
+        return;
+      }
+
+      window.setTimeout(() => {
+        if (scene.interrupt) {
+          state.pendingInterrupt = scene.interrupt;
+          addMessage({ speaker: scene.interrupt.speaker, text: scene.interrupt.text, timeStamp: scene.interrupt.timeStamp });
+
+          if (scene.interrupt.speaker === "parent") {
+            state.pressureLog.push({
+              timeStamp: scene.interrupt.timeStamp,
+              text: scene.interrupt.text.replace("家长短信：", ""),
+            });
+          }
+
+          state.phase = "interruptChoice";
+          render();
+          return;
+        }
+
+        if (index >= scenes.length - 1) {
+          state.endingKey = getEnding(nextStats);
+          render();
+          return;
+        }
+
+        goToNextScene(index, nextStats);
+      }, 650);
+    }
+
+    function applyChoice(choice) {
+      if (state.phase !== "choice" || state.endingKey) return;
+
+      const currentScene = scenes[state.sceneIndex];
+      const sceneIndex = state.sceneIndex;
+
+      state.phase = "locked";
+      addMessage({ speaker: "player", text: choice.text });
+
+      const nextStats = mergeStats(state.stats, choice.delta);
+
+      window.setTimeout(() => setTyping(true), 250);
+
+      window.setTimeout(() => {
+        setTyping(false);
+        state.stats = nextStats;
+        addMessage({ speaker: "student", text: choice.reply, timeStamp: currentScene.timeStamp });
+        finishScene(nextStats, currentScene, sceneIndex);
+      }, 850);
+    }
+
+    function handleInterruptChoice(choice) {
+      if (state.phase !== "interruptChoice" || !state.pendingInterrupt) return;
+
+      const pending = state.pendingInterrupt;
+      const sceneIndex = state.sceneIndex;
+
+      state.phase = "locked";
+      addMessage({ speaker: "player", text: "处理插话：" + choice.text });
+
+      const nextStats = mergeStats(state.stats, choice.delta);
+
+      window.setTimeout(() => setTyping(true), 200);
+
+      window.setTimeout(() => {
+        setTyping(false);
+        state.stats = nextStats;
+        addMessage({ speaker: pending.speaker, text: choice.reply, timeStamp: pending.timeStamp });
+        state.pendingInterrupt = null;
+
+        const fatalEnding = getFatalEnding(nextStats);
+        if (fatalEnding) {
+          window.setTimeout(() => {
+            state.endingKey = fatalEnding;
+            render();
+          }, 650);
+          return;
+        }
+
+        if (sceneIndex >= scenes.length - 1) {
+          window.setTimeout(() => {
+            state.endingKey = getEnding(nextStats);
+            render();
+          }, 650);
+          return;
+        }
+
+        window.setTimeout(() => goToNextScene(sceneIndex, nextStats), 650);
+      }, 850);
+    }
+
+    function statClass(key, value) {
+      const danger = key === "stress" ? value >= 6 : key === "time" ? value <= 2 : value <= 1;
+      const good = key === "stress" ? value <= 2 : key === "time" ? value >= 7 : value >= 4;
+      return danger ? "danger" : good ? "good" : "";
+    }
+
+    function avatarHTML(speakerKey) {
+      const speaker = speakers[speakerKey] || speakers.system;
+      const url = speaker.avatarUrl || "";
+      const img = url ? `<img src="${escapeAttr(url)}" alt="${escapeAttr(speaker.name)}" onerror="this.remove(); this.parentNode.textContent='${escapeAttr(speaker.avatar)}';">` : speaker.avatar;
+      return `<div class="avatar ${speaker.cls}">${img}</div>`;
+    }
+
+    function messageHTML(message, index) {
+      const speakerKey = message.speaker || "student";
+      const speaker = speakers[speakerKey] || speakers.system;
+      const isPlayer = speakerKey === "player";
+      return `
+        <div class="msg ${isPlayer ? "player" : ""}" data-index="${index}">
+          ${isPlayer ? "" : avatarHTML(speakerKey)}
+          <div class="bubblewrap">
+            <div class="meta">
+              <span>${escapeHTML(speaker.name)}</span><span>·</span><span>${escapeHTML(speaker.role)}</span>
+              ${message.timeStamp ? `<span>· ${escapeHTML(message.timeStamp)}</span>` : ""}
+            </div>
+            <div class="bubble ${speaker.cls}">${escapeHTML(message.text)}</div>
+          </div>
+          ${isPlayer ? avatarHTML("player") : ""}
+        </div>
+      `;
+    }
+
+    function typingHTML() {
+      const speakerKey = state.pendingInterrupt ? state.pendingInterrupt.speaker : "student";
+      return `
+        <div class="msg">
+          ${avatarHTML(speakerKey)}
+          <div class="typing"><span></span><span></span><span></span></div>
+        </div>
+      `;
+    }
+
+    function choicesHTML() {
+      if (state.endingKey || !state.started) return "";
+      const currentScene = scenes[state.sceneIndex];
+
+      if (state.phase === "choice" && currentScene) {
+        return `
+          <div class="choice-area">
+            <p class="choice-label">🤖 Clara 选择回复</p>
+            <div class="choices">
+              ${currentScene.choices.map((choice, index) => `
+                <button class="choice-btn" onclick="applyChoiceByIndex(${index})">
+                  <span class="num">${index + 1}</span>${escapeHTML(choice.text)}
+                </button>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      if (state.phase === "interruptChoice" && state.pendingInterrupt) {
+        return `
+          <div class="choice-area interrupt">
+            <p class="choice-label">🔔 插话打断：请选择处理方式</p>
+            <div class="choices">
+              ${state.pendingInterrupt.choices.map((choice, index) => `
+                <button class="choice-btn" onclick="handleInterruptChoiceByIndex(${index})">
+                  <span class="num">${index + 1}</span>${escapeHTML(choice.text)}
+                </button>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      return "";
+    }
+
+    function endingHTML() {
+      if (!state.endingKey) return "";
+      const ending = endings[state.endingKey];
+      return `
+        <div class="ending">
+          <div class="ending-tag">${escapeHTML(ending.tag)}</div>
+          <h2>${escapeHTML(ending.title)}</h2>
+          <p>${escapeHTML(ending.text)}</p>
+          <button onclick="resetGame()">再玩一次 ↻</button>
+        </div>
+      `;
+    }
+
+    function render() {
+      const progressPercent = clamp((state.stats.progress / 8) * 100, 0, 100);
+      const currentScene = scenes[state.sceneIndex];
+
+      document.getElementById("app").innerHTML = `
+        <div class="app">
+          <div class="topbar">
+            <div class="program">
+              <div class="window-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+              </div>
+              <span class="divider"></span>
+              <span>▣ DeadlineAssist.exe / Clara Workspace</span>
+            </div>
+            <button class="reset-btn" onclick="resetGame()">↻ 重启程序</button>
+          </div>
+
+          <header class="header">
+            <div>
+              <div class="eyebrow">✦ Vibe Jam 中文原型 · 教务压力处理版</div>
+              <h1>再回一句</h1>
+              <p class="subtitle">Clara 在作品集截止前的最后十分钟里，同时处理学生崩溃、教研主管提醒、家长催促短信和提交风险。</p>
+            </div>
+            <div class="stats">
+              <div class="stat ${statClass("time", state.stats.time)}"><span class="label">时间</span><span class="value">${state.stats.time}/10</span></div>
+              <div class="stat ${statClass("trust", state.stats.trust)}"><span class="label">信任</span><span class="value">${state.stats.trust}/6</span></div>
+              <div class="stat ${statClass("stress", state.stats.stress)}"><span class="label">压力</span><span class="value">${state.stats.stress}/8</span></div>
+              <div class="stat ${statClass("progress", state.stats.progress)}"><span class="label">进度</span><span class="value">${state.stats.progress}/8</span></div>
+            </div>
+          </header>
+
+          <main class="layout">
+            <aside class="left">
+              <section class="card">
+                <div class="mission-head">
+                  <div>
+                    <div class="smallcap">Mission</div>
+                    <div class="card-title">最低可提交版本</div>
+                  </div>
+                  <div class="live">Live</div>
+                </div>
+                <div class="progress-row">
+                  <span>提交进度</span>
+                  <span>${state.stats.progress}/8</span>
+                </div>
+                <div class="bar"><div class="bar-fill" style="width:${progressPercent}%"></div></div>
+                <p>目标：在时间归零前，保持学生信任，压住外部压力，把提交进度推到安全线。</p>
+              </section>
+
+              <section class="card red-card">
+                <div class="card-title">⚠ 家长压力源</div>
+                <p>家长短信会在关键阶段插入。如果处理不当，学生压力会上升，可能提前进入崩溃结局。</p>
+                <div class="tipbox">
+                  <strong>建议处理方式</strong>
+                  简短、稳定、不要把家长焦虑转给学生；先保证提交，再同步结果。
+                </div>
+              </section>
+            </aside>
+
+            <section class="center">
+              <div class="chat-head">
+                <div class="identity">
+                  ${avatarHTML("student")}
+                  <div>
+                    <div class="headline">林同学 / Portfolio Submit</div>
+                    <div class="subline">Clara 正在协助提交 · 家长短信可能打断会话</div>
+                  </div>
+                </div>
+                <div class="listen">🔔 ${state.pendingInterrupt ? "有插话待处理" : "监听中"}</div>
+              </div>
+
+              ${!state.started ? `
+                <div class="start">
+                  <div class="start-box">
+                    <div class="smallcap">02:43 AM / Deadline Mode</div>
+                    <h2>一个截止时间。一个学生。再回一句。</h2>
+                    <p>你是教务 Clara。你需要在学生、教研主管、家长短信和提交系统之间做出取舍。</p>
+                    <button class="primary" onclick="startGame()">启动工作台 →</button>
+                  </div>
+                </div>
+              ` : `
+                <div id="chat-scroll-area" class="chat-scroll">
+                  ${state.history.map(messageHTML).join("")}
+                  ${state.isTyping ? typingHTML() : ""}
+                  ${endingHTML()}
+                </div>
+                ${choicesHTML()}
+              `}
+            </section>
+
+            <aside class="right">
+              <section class="card">
+                <div class="card-title">🔔 外部消息队列</div>
+                <div class="queue-state ${state.pendingInterrupt ? "hot" : ""}">
+                  ${state.pendingInterrupt ? "当前有插话正在打断主线会话。必须处理后才能继续推进学生提交。" : "暂无待处理插话。系统会在关键阶段插入安老师、同学、群聊、家长或导出通知。"}
+                </div>
+                <div class="mini-grid">
+                  <div class="mini"><span>当前阶段</span><strong>${state.started ? `${state.sceneIndex + 1}/${scenes.length}` : "未开始"}</strong></div>
+                  <div class="mini"><span>输入状态</span><strong>${state.phase === "choice" ? "等待回复" : state.phase === "interruptChoice" ? "处理插话" : state.phase === "locked" ? "对方输入中" : "待启动"}</strong></div>
+                </div>
+              </section>
+
+              <section class="card red-card">
+                <div class="card-title">☎ 家长催促进度短信</div>
+                <div class="pressure-list">
+                  ${state.pressureLog.length === 0 ? `
+                    <div class="empty">家长压力短信出现后会记录在这里。</div>
+                  ` : state.pressureLog.map(item => `
+                    <div class="pressure-item">
+                      <div class="pressure-time">☎ ${escapeHTML(item.timeStamp)}</div>
+                      <div>${escapeHTML(item.text)}</div>
+                    </div>
+                  `).join("")}
+                </div>
+              </section>
+
+              <section class="card" style="border-color: rgba(245,158,11,.25); background: rgba(245,158,11,.10);">
+                <div class="card-title" style="color:#fef3c7;">头像接口</div>
+                <p style="color:rgba(254,243,199,.84)">当前头像使用 Postimages 图片直链。若显示文字头像，说明图片链接加载失败，系统会自动回退到文字头像。</p>
+              </section>
+            </aside>
+          </main>
+        </div>
+      `;
+
+      window.requestAnimationFrame(() => {
+        const container = document.getElementById("chat-scroll-area");
+        if (container) container.scrollTop = container.scrollHeight;
+      });
+    }
+
+    function applyChoiceByIndex(index) {
+      const scene = scenes[state.sceneIndex];
+      if (!scene || !scene.choices[index]) return;
+      applyChoice(scene.choices[index]);
+    }
+
+    function handleInterruptChoiceByIndex(index) {
+      if (!state.pendingInterrupt || !state.pendingInterrupt.choices[index]) return;
+      handleInterruptChoice(state.pendingInterrupt.choices[index]);
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function escapeAttr(value) {
+      return escapeHTML(value).replace(/`/g, "&#096;");
+    }
+
+    window.startGame = startGame;
+    window.resetGame = resetGame;
+    window.applyChoiceByIndex = applyChoiceByIndex;
+    window.handleInterruptChoiceByIndex = handleInterruptChoiceByIndex;
+
+    render();
+  </script>
 </body>
 </html>

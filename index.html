@@ -478,6 +478,7 @@
   </style>
 </head>
 
+
 <body>
   <div id="app"></div>
 
@@ -677,6 +678,8 @@
       pressureLog: [],
     };
 
+    let appMounted = false;
+
     function mergeStats(base, delta = {}) {
       return {
         trust: clamp(base.trust + (delta.trust || 0), LIMITS.trust[0], LIMITS.trust[1]),
@@ -725,6 +728,7 @@
         pendingInterrupt: null,
         pressureLog: [],
       };
+      appMounted = false;
       render();
     }
 
@@ -735,6 +739,7 @@
         { speaker: "system", text: "Deadline Assist 已启动。检测到学生提交风险：高。建议 Clara 先建立最低可提交版本。", timeStamp: "02:43 AM" },
         { speaker: "student", text: scenes[0].student, timeStamp: scenes[0].timeStamp },
       ];
+      appMounted = false;
       render();
     }
 
@@ -867,7 +872,8 @@
     function avatarHTML(speakerKey) {
       const speaker = speakers[speakerKey] || speakers.system;
       const url = speaker.avatarUrl || "";
-      const img = url ? `<img src="${escapeAttr(url)}" alt="${escapeAttr(speaker.name)}" onerror="this.remove(); this.parentNode.textContent='${escapeAttr(speaker.avatar)}';">` : speaker.avatar;
+      const fallback = escapeAttr(speaker.avatar);
+      const img = url ? `<img src="${escapeAttr(url)}" alt="${escapeAttr(speaker.name)}" onerror="this.remove(); this.parentNode.textContent='${fallback}';">` : speaker.avatar;
       return `<div class="avatar ${speaker.cls}">${img}</div>`;
     }
 
@@ -893,7 +899,7 @@
     function typingHTML() {
       const speakerKey = state.pendingInterrupt ? state.pendingInterrupt.speaker : "student";
       return `
-        <div class="msg">
+        <div class="msg" id="typing-row">
           ${avatarHTML(speakerKey)}
           <div class="typing"><span></span><span></span><span></span></div>
         </div>
@@ -950,11 +956,9 @@
       `;
     }
 
-    function render() {
+    function appShellHTML() {
       const progressPercent = clamp((state.stats.progress / 8) * 100, 0, 100);
-      const currentScene = scenes[state.sceneIndex];
-
-      document.getElementById("app").innerHTML = `
+      return `
         <div class="app">
           <div class="topbar">
             <div class="program">
@@ -975,12 +979,7 @@
               <h1>再回一句</h1>
               <p class="subtitle">Clara 在作品集截止前的最后十分钟里，同时处理学生崩溃、教研主管提醒、家长催促短信和提交风险。</p>
             </div>
-            <div class="stats">
-              <div class="stat ${statClass("time", state.stats.time)}"><span class="label">时间</span><span class="value">${state.stats.time}/10</span></div>
-              <div class="stat ${statClass("trust", state.stats.trust)}"><span class="label">信任</span><span class="value">${state.stats.trust}/6</span></div>
-              <div class="stat ${statClass("stress", state.stats.stress)}"><span class="label">压力</span><span class="value">${state.stats.stress}/8</span></div>
-              <div class="stat ${statClass("progress", state.stats.progress)}"><span class="label">进度</span><span class="value">${state.stats.progress}/8</span></div>
-            </div>
+            <div class="stats" id="stats-area"></div>
           </header>
 
           <main class="layout">
@@ -995,9 +994,9 @@
                 </div>
                 <div class="progress-row">
                   <span>提交进度</span>
-                  <span>${state.stats.progress}/8</span>
+                  <span id="progress-value">${state.stats.progress}/8</span>
                 </div>
-                <div class="bar"><div class="bar-fill" style="width:${progressPercent}%"></div></div>
+                <div class="bar"><div class="bar-fill" id="progress-bar" style="width:${progressPercent}%"></div></div>
                 <p>目标：在时间归零前，保持学生信任，压住外部压力，把提交进度推到安全线。</p>
               </section>
 
@@ -1020,52 +1019,25 @@
                     <div class="subline">Clara 正在协助提交 · 家长短信可能打断会话</div>
                   </div>
                 </div>
-                <div class="listen">🔔 ${state.pendingInterrupt ? "有插话待处理" : "监听中"}</div>
+                <div class="listen" id="listen-state">🔔 监听中</div>
               </div>
 
-              ${!state.started ? `
-                <div class="start">
-                  <div class="start-box">
-                    <div class="smallcap">02:43 AM / Deadline Mode</div>
-                    <h2>一个截止时间。一个学生。再回一句。</h2>
-                    <p>你是教务 Clara。你需要在学生、教研主管、家长短信和提交系统之间做出取舍。</p>
-                    <button class="primary" onclick="startGame()">启动工作台 →</button>
-                  </div>
-                </div>
-              ` : `
-                <div id="chat-scroll-area" class="chat-scroll">
-                  ${state.history.map(messageHTML).join("")}
-                  ${state.isTyping ? typingHTML() : ""}
-                  ${endingHTML()}
-                </div>
-                ${choicesHTML()}
-              `}
+              <div id="main-stage"></div>
             </section>
 
             <aside class="right">
               <section class="card">
                 <div class="card-title">🔔 外部消息队列</div>
-                <div class="queue-state ${state.pendingInterrupt ? "hot" : ""}">
-                  ${state.pendingInterrupt ? "当前有插话正在打断主线会话。必须处理后才能继续推进学生提交。" : "暂无待处理插话。系统会在关键阶段插入安老师、同学、群聊、家长或导出通知。"}
-                </div>
+                <div id="queue-state"></div>
                 <div class="mini-grid">
-                  <div class="mini"><span>当前阶段</span><strong>${state.started ? `${state.sceneIndex + 1}/${scenes.length}` : "未开始"}</strong></div>
-                  <div class="mini"><span>输入状态</span><strong>${state.phase === "choice" ? "等待回复" : state.phase === "interruptChoice" ? "处理插话" : state.phase === "locked" ? "对方输入中" : "待启动"}</strong></div>
+                  <div class="mini"><span>当前阶段</span><strong id="stage-value">未开始</strong></div>
+                  <div class="mini"><span>输入状态</span><strong id="phase-value">待启动</strong></div>
                 </div>
               </section>
 
               <section class="card red-card">
                 <div class="card-title">☎ 家长催促进度短信</div>
-                <div class="pressure-list">
-                  ${state.pressureLog.length === 0 ? `
-                    <div class="empty">家长压力短信出现后会记录在这里。</div>
-                  ` : state.pressureLog.map(item => `
-                    <div class="pressure-item">
-                      <div class="pressure-time">☎ ${escapeHTML(item.timeStamp)}</div>
-                      <div>${escapeHTML(item.text)}</div>
-                    </div>
-                  `).join("")}
-                </div>
+                <div class="pressure-list" id="pressure-list"></div>
               </section>
 
               <section class="card" style="border-color: rgba(245,158,11,.25); background: rgba(245,158,11,.10);">
@@ -1076,11 +1048,125 @@
           </main>
         </div>
       `;
+    }
 
-      window.requestAnimationFrame(() => {
-        const container = document.getElementById("chat-scroll-area");
-        if (container) container.scrollTop = container.scrollHeight;
-      });
+    function startScreenHTML() {
+      return `
+        <div class="start">
+          <div class="start-box">
+            <div class="smallcap">02:43 AM / Deadline Mode</div>
+            <h2>一个截止时间。一个学生。再回一句。</h2>
+            <p>你是教务 Clara。你需要在学生、教研主管、家长短信和提交系统之间做出取舍。</p>
+            <button class="primary" onclick="startGame()">启动工作台 →</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function chatStageHTML() {
+      return `
+        <div id="chat-scroll-area" class="chat-scroll"></div>
+        <div id="choice-container"></div>
+      `;
+    }
+
+    function updateStats() {
+      const area = document.getElementById("stats-area");
+      if (!area) return;
+      area.innerHTML = `
+        <div class="stat ${statClass("time", state.stats.time)}"><span class="label">时间</span><span class="value">${state.stats.time}/10</span></div>
+        <div class="stat ${statClass("trust", state.stats.trust)}"><span class="label">信任</span><span class="value">${state.stats.trust}/6</span></div>
+        <div class="stat ${statClass("stress", state.stats.stress)}"><span class="label">压力</span><span class="value">${state.stats.stress}/8</span></div>
+        <div class="stat ${statClass("progress", state.stats.progress)}"><span class="label">进度</span><span class="value">${state.stats.progress}/8</span></div>
+      `;
+
+      const progressPercent = clamp((state.stats.progress / 8) * 100, 0, 100);
+      const progressValue = document.getElementById("progress-value");
+      const progressBar = document.getElementById("progress-bar");
+      if (progressValue) progressValue.textContent = `${state.stats.progress}/8`;
+      if (progressBar) progressBar.style.width = `${progressPercent}%`;
+    }
+
+    function updateRightPanel() {
+      const listenState = document.getElementById("listen-state");
+      const queueState = document.getElementById("queue-state");
+      const stageValue = document.getElementById("stage-value");
+      const phaseValue = document.getElementById("phase-value");
+      const pressureList = document.getElementById("pressure-list");
+
+      if (listenState) listenState.textContent = `🔔 ${state.pendingInterrupt ? "有插话待处理" : "监听中"}`;
+
+      if (queueState) {
+        queueState.className = `queue-state ${state.pendingInterrupt ? "hot" : ""}`;
+        queueState.textContent = state.pendingInterrupt
+          ? "当前有插话正在打断主线会话。必须处理后才能继续推进学生提交。"
+          : "暂无待处理插话。系统会在关键阶段插入安老师、同学、群聊、家长或导出通知。";
+      }
+
+      if (stageValue) stageValue.textContent = state.started ? `${state.sceneIndex + 1}/${scenes.length}` : "未开始";
+
+      if (phaseValue) {
+        phaseValue.textContent =
+          state.phase === "choice" ? "等待回复" :
+          state.phase === "interruptChoice" ? "处理插话" :
+          state.phase === "locked" ? "对方输入中" : "待启动";
+      }
+
+      if (pressureList) {
+        pressureList.innerHTML = state.pressureLog.length === 0
+          ? `<div class="empty">家长压力短信出现后会记录在这里。</div>`
+          : state.pressureLog.map(item => `
+              <div class="pressure-item">
+                <div class="pressure-time">☎ ${escapeHTML(item.timeStamp)}</div>
+                <div>${escapeHTML(item.text)}</div>
+              </div>
+            `).join("");
+      }
+    }
+
+    function updateChat() {
+      const stage = document.getElementById("main-stage");
+      if (!stage) return;
+
+      const hasChat = Boolean(document.getElementById("chat-scroll-area"));
+
+      if (!state.started) {
+        stage.innerHTML = startScreenHTML();
+        return;
+      }
+
+      if (!hasChat) {
+        stage.innerHTML = chatStageHTML();
+      }
+
+      const chat = document.getElementById("chat-scroll-area");
+      const choiceContainer = document.getElementById("choice-container");
+
+      if (chat) {
+        chat.innerHTML = `
+          ${state.history.map(messageHTML).join("")}
+          ${state.isTyping ? typingHTML() : ""}
+          ${endingHTML()}
+        `;
+        window.requestAnimationFrame(() => {
+          chat.scrollTop = chat.scrollHeight;
+        });
+      }
+
+      if (choiceContainer) {
+        choiceContainer.innerHTML = choicesHTML();
+      }
+    }
+
+    function render() {
+      const app = document.getElementById("app");
+      if (!appMounted) {
+        app.innerHTML = appShellHTML();
+        appMounted = true;
+      }
+      updateStats();
+      updateRightPanel();
+      updateChat();
     }
 
     function applyChoiceByIndex(index) {

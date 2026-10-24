@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Hyper3D Rodin 与 UE5 三维模型制作与使用规范——学生版">
+  <meta name="theme-color" content="#d8d8d4">
+  <title>三维模型制作与使用规范｜学生版</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#guide">跳到操作规范</a>
+
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="返回顶部">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>3D ASSET<br>STUDENT GUIDE</span>
+    </a>
+    <nav class="topnav" aria-label="主要导航">
+      <a href="#guide">操作规范</a>
+      <a href="#quick-check">提交检查</a>
+      <a href="downloads/三维模型制作与使用规则_学生版.pdf" download>下载 PDF</a>
+    </nav>
+  </header>
+
+  <aside class="side-rail" aria-label="章节进度">
+    <span class="rail-title">INDEX</span>
+    <div class="rail-progress"><span id="rail-progress"></span></div>
+    <ol id="rail-nav"></ol>
+  </aside>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <canvas id="wireframe" aria-hidden="true"></canvas>
+      <div class="hero-copy">
+        <p class="eyebrow">HYPER3D RODIN → UNREAL ENGINE 5</p>
+        <h1 id="hero-title">让模型<br><span>真正进入</span><br>游戏。</h1>
+        <p class="hero-intro">从生成、检查、导入到提交。每一步都告诉你一定要做什么、哪里容易出错。</p>
+        <a class="start-link" href="#guide">开始检查 <span aria-hidden="true">↘</span></a>
+      </div>
+      <div class="hero-note" aria-label="使用说明">
+        <span>01—05</span>
+        <p>普通道具完成 1–3，再按第 5 步提交。<br>人形角色动画另外查看第 4 步。</p>
+      </div>
+      <div class="accent-shape" aria-hidden="true"></div>
+      <p class="scroll-cue">SCROLL TO CHECK</p>
+    </section>
+
+    <section class="guide" id="guide" aria-labelledby="guide-title">
+      <div class="section-heading">
+        <p class="eyebrow">FIVE STEPS / CLASSROOM EDITION</p>
+        <h2 id="guide-title">五步完成<br>一件可用的模型</h2>
+        <p>点选标签可以只看某一类要求。课堂上建议按顺序完成。</p>
+      </div>
+
+      <div class="filters" role="group" aria-label="筛选规则类型">
+        <button class="filter is-active" type="button" data-filter="all" aria-pressed="true">全部</button>
+        <button class="filter" type="button" data-filter="must" aria-pressed="false"><span></span>一定要做</button>
+        <button class="filter" type="button" data-filter="notice" aria-pressed="false"><span></span>需要注意</button>
+        <button class="filter" type="button" data-filter="dont" aria-pressed="false"><span></span>不要做</button>
+      </div>
+
+      <div id="steps" class="steps"></div>
+    </section>
+
+    <section class="quick-check" id="quick-check" aria-labelledby="check-title">
+      <div class="check-heading">
+        <p class="eyebrow">FINAL CHECK / 60 SECONDS</p>
+        <h2 id="check-title">交给组员前，<br>再看一遍。</h2>
+      </div>
+      <div class="check-list" id="check-list"></div>
+      <div class="check-status" aria-live="polite">
+        <span id="check-count">0 / 6</span>
+        <div class="status-bar"><span id="check-progress"></span></div>
+        <p id="check-message">从第一项开始检查</p>
+      </div>
+    </section>
+
+    <section class="closing" aria-labelledby="closing-title">
+      <canvas id="closing-wireframe" aria-hidden="true"></canvas>
+      <p class="eyebrow">MODEL READY / GAME READY</p>
+      <h2 id="closing-title">模型看起来对，<br>还要<span>用起来对。</span></h2>
+      <a class="download-link" href="downloads/三维模型制作与使用规则_学生版.pdf" download>
+        下载学生版 PDF <span aria-hidden="true">↓</span>
+      </a>
+    </section>
+  </main>
+
+  <footer>
+    <p>三维模型制作与使用规范 · 学生版</p>
+    <p>Hyper3D Rodin × Unreal Engine 5</p>
+    <a href="#top">回到顶部 ↑</a>
+  </footer>
+
+  <script src="content.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
